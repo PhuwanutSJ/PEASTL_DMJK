@@ -15,31 +15,54 @@
 <body class="bg-gray-50 text-gray-800">
 
     <div class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-blue-900">Dashboard สำรวจโคมไฟสาธารณะ</h1>
-            <p class="text-gray-600">กฟส.มัญจาคีรี | อัปเดตล่าสุด: <span id="last-update">กำลังดึงข้อมูล...</span></p>
+        <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-blue-900">Dashboard สำรวจโคมไฟสาธารณะ</h1>
+                <p class="text-gray-600">กฟส.มัญจาคีรี | อัปเดตล่าสุด: <span id="last-update">กำลังดึงข้อมูล...</span></p>
+            </div>
+            <!-- Global Date Filter -->
+            <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+                <span class="text-sm font-semibold text-gray-700 pl-2">กรองวันที่:</span>
+                <input type="date" id="globalFilterDate" onchange="applyGlobalFilter()" class="border rounded-lg p-1.5 bg-gray-50 text-sm">
+                <button onclick="document.getElementById('globalFilterDate').value=''; applyGlobalFilter();" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded-lg">ล้างวันที่</button>
+            </div>
         </header>
 
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <p class="text-sm text-gray-500">อุปกรณ์ทั้งหมด</p>
-                <h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">อุปกรณ์ทั้งหมด</p>
+                    <h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3>
+                </div>
             </div>
-            <div class="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-100">
-                <p class="text-sm text-green-700">สำรวจเสร็จสิ้น</p>
-                <h3 id="stat-done" class="text-3xl font-bold text-green-800">0</h3>
+            
+            <div class="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-100 flex flex-col justify-between">
+                <div>
+                    <p class="text-sm text-green-700">สำรวจเสร็จสิ้น</p>
+                    <h3 id="stat-done" class="text-3xl font-bold text-green-800">0</h3>
+                </div>
             </div>
-            <div class="bg-yellow-50 p-6 rounded-2xl shadow-sm border border-yellow-100">
-                <p class="text-sm text-yellow-700">ระหว่างดำเนินการ</p>
-                <h3 id="stat-progress" class="text-3xl font-bold text-yellow-800">0</h3>
-            </div>
-            <div class="bg-red-50 p-6 rounded-2xl shadow-sm border border-red-100">
-                <p class="text-sm text-red-700">รอดำเนินการ</p>
-                <h3 id="stat-pending" class="text-3xl font-bold text-red-800">0</h3>
+
+            <div class="bg-amber-50 p-6 rounded-2xl shadow-sm border border-amber-100 flex flex-col justify-between">
+                <div>
+                    <p class="text-sm text-amber-700 font-semibold">ยังไม่สำรวจ</p>
+                    <h3 id="stat-not-surveyed-total" class="text-3xl font-bold text-amber-900 mb-2">0</h3>
+                </div>
+                <div class="border-t border-amber-200/60 pt-2 text-xs text-amber-800 space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span>- ระหว่างดำเนินการ:</span>
+                        <span id="stat-progress" class="font-semibold text-sm">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>- รอดำเนินการ:</span>
+                        <span id="stat-pending" class="font-semibold text-sm">0</span>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- Charts and Surveyor Section -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h2 class="text-xl font-semibold mb-4">ผลการสำรวจรายบุคคล (เฉพาะที่เสร็จสิ้น)</h2>
@@ -50,9 +73,11 @@
                     </table>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-xl font-semibold mb-4">สัดส่วนสถานะงาน</h2>
-                <canvas id="statusChart"></canvas>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                <h2 class="text-xl font-semibold mb-4 w-full text-left">สัดส่วนสถานะงาน</h2>
+                <div class="w-full max-w-[280px]">
+                    <canvas id="statusChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -60,19 +85,26 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
                 <h2 class="text-xl font-semibold">ข้อมูลการสำรวจทั้งหมด</h2>
-                <select id="filterStatus" onchange="renderMainTable()" class="border rounded-lg p-2 bg-gray-50">
-                    <option value="ทั้งหมด">สถานะ: ทั้งหมด</option>
-                    <option value="สำรวจเสร็จสิ้น">สถานะ: สำรวจเสร็จสิ้น</option>
-                    <option value="ระหว่างดำเนินการ">สถานะ: ระหว่างดำเนินการ</option>
-                    <option value="รอดำเนินการ">สถานะ: รอดำเนินการ</option>
-                </select>
+                <div class="flex flex-wrap gap-2 items-center">
+                    <select id="filterStatus" onchange="renderMainTable()" class="border rounded-lg p-2 bg-gray-50 text-sm">
+                        <option value="ทั้งหมด">สถานะ: ทั้งหมด</option>
+                        <option value="สำรวจเสร็จสิ้น">สถานะ: สำรวจเสร็จสิ้น</option>
+                        <option value="ระหว่างดำเนินการ">สถานะ: ระหว่างดำเนินการ</option>
+                        <option value="รอดำเนินการ">สถานะ: รอดำเนินการ</option>
+                    </select>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left border-collapse">
                     <thead class="bg-gray-100 border-b">
                         <tr>
-                            <th class="p-3">ID</th><th class="p-3">PEA TR.</th><th class="p-3">Office</th>
-                            <th class="p-3">จำนวนเสา</th><th class="p-3">ผู้สำรวจ</th><th class="p-3">สถานะ</th>
+                            <th class="p-3">ID</th>
+                            <th class="p-3">PEA TR.</th>
+                            <th class="p-3">Office</th>
+                            <th class="p-3">จำนวนเสา</th>
+                            <th class="p-3">ผู้สำรวจ</th>
+                            <th class="p-3">วันที่สำรวจเสร็จสิ้น</th>
+                            <th class="p-3">สถานะ</th>
                         </tr>
                     </thead>
                     <tbody id="main-data-body"></tbody>
@@ -84,7 +116,7 @@
     <script>
         const CONFIG = {
             SHEET_ID: '1NqFeYaZGS6agz7iL3bfa6b_GmtujoE_0_n3QKlj2W-w',
-            COL_A: 0, COL_B: 1, COL_C: 2, COL_E: 4, COL_U: 20, COL_V: 21
+            COL_A: 0, COL_B: 1, COL_C: 2, COL_E: 4, COL_U: 20, COL_V: 21, COL_T: 19
         };
         
         let allProcessedRows = [];
@@ -95,16 +127,88 @@
                 const res = await fetch(url);
                 const text = await res.text();
                 const json = JSON.parse(text.substring(47).slice(0, -2));
-                processData(json.table.rows);
+                allProcessedRows = json.table.rows;
+                applyGlobalFilter();
             } catch (e) { console.error(e); }
         }
 
+        function parseRowDate(row) {
+            const c = row.c;
+            if (!c) return null;
+            const cell = c[CONFIG.COL_T];
+            if (!cell) return null;
+            
+            const dateVal = cell.f || cell.v;
+            if (!dateVal) return null;
+
+            // Handle Google Visualization Date string format: "Date(YYYY, M, D)"
+            if (typeof dateVal === 'string' && dateVal.startsWith('Date(')) {
+                const parts = dateVal.match(/\d+/g);
+                if (parts && parts.length >= 3) {
+                    let y = parseInt(parts[0]);
+                    // Convert Buddhist Era (พ.ศ. >= 2400) to Gregorian (ค.ศ.)
+                    if (y > 2400) y -= 543;
+                    const m = String(parseInt(parts[1]) + 1).padStart(2, '0');
+                    const d = String(parts[2]).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                }
+            } else if (typeof dateVal === 'string') {
+                // If format is like "DD/MM/YYYY" or "DD/MM/BBBB"
+                const parts = dateVal.split('/');
+                if (parts.length === 3) {
+                    let d = parts[0].padStart(2, '0');
+                    let m = parts[1].padStart(2, '0');
+                    let y = parseInt(parts[2]);
+                    if (y > 2400) y -= 543;
+                    return `${y}-${m}-${d}`;
+                }
+                
+                // If standard YYYY-MM-DD
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
+                    let [y, m, d] = dateVal.split('-');
+                    if (parseInt(y) > 2400) y = String(parseInt(y) - 543);
+                    return `${y}-${m}-${d}`;
+                }
+
+                const parsed = new Date(dateVal);
+                if (!isNaN(parsed.getTime())) {
+                    let y = parsed.getFullYear();
+                    if (y > 2400) y -= 543;
+                    const m = String(parsed.getMonth() + 1).padStart(2, '0');
+                    const d = String(parsed.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                }
+            }
+            return null;
+        }
+
+        function applyGlobalFilter() {
+            const filterDate = document.getElementById('globalFilterDate').value;
+            
+            const filteredRows = allProcessedRows.filter(row => {
+                if (!filterDate) return true;
+                const rowDate = parseRowDate(row);
+                return rowDate === filterDate;
+            });
+
+            processData(filteredRows);
+        }
+
         function processData(rows) {
-            allProcessedRows = rows;
             let total = rows.length;
             let done = 0, progress = 0, pending = 0;
             const surveyors = {};
             
+            // Map surveyor ID/name to full name
+            const surveyorMap = {
+                "452037": "นายพงษ์ศักดิ์ ประจันตะเสน",
+                "489783": "นายชัยยัณห์ มนตรี",
+                "497220": "นายปราบทรชน สุวรรณหงษ์",
+                "508578": "ส.อ.ภูวณัตย์ ศรีจันทร์",
+                "511910": "นายนิพจน์ สีเงิน",
+                "511945": "นายพรหมพิทักษ์ โพธิ์ตึ"
+            };
+
             rows.forEach(row => {
                 const c = row.c;
                 if (!c) return;
@@ -118,15 +222,19 @@
                 else pending++;
 
                 if (status === "สำรวจเสร็จสิ้น") {
-                    const surveyor = (c[CONFIG.COL_U]?.v === null || c[CONFIG.COL_U]?.v === undefined) ? "รอดำเนินการ" : c[CONFIG.COL_U].v;
+                    let rawSurveyor = (c[CONFIG.COL_U]?.v === null || c[CONFIG.COL_U]?.v === undefined) ? "รอดำเนินการ" : String(c[CONFIG.COL_U].v).trim();
+                    const surveyor = surveyorMap[rawSurveyor] || rawSurveyor;
                     if (!surveyors[surveyor]) surveyors[surveyor] = { devices: 0, poles: 0 };
                     surveyors[surveyor].devices += 1;
                     surveyors[surveyor].poles += (parseInt(c[CONFIG.COL_E]?.v) || 0);
                 }
             });
 
+            const notSurveyedTotal = progress + pending;
+
             document.getElementById('stat-total').innerText = total;
             document.getElementById('stat-done').innerText = done;
+            document.getElementById('stat-not-surveyed-total').innerText = notSurveyedTotal;
             document.getElementById('stat-progress').innerText = progress;
             document.getElementById('stat-pending').innerText = pending;
             document.getElementById('last-update').innerText = new Date().toLocaleString('th-TH');
@@ -134,7 +242,7 @@
             const tbody = document.getElementById('surveyor-table-body');
             tbody.innerHTML = Object.entries(surveyors).map(([name, d]) => `
                 <tr class="border-b"><td class="py-3">${name}</td><td class="py-3 text-center">${d.devices}</td><td class="py-3 text-center">${d.poles}</td></tr>
-            `).join('');
+            `).join('') || `<tr><td colspan="3" class="py-4 text-center text-gray-500">ไม่มีข้อมูลผู้สำรวจตามวันที่เลือก</td></tr>`;
 
             const ctx = document.getElementById('statusChart').getContext('2d');
             if (window.myChart) window.myChart.destroy();
@@ -163,26 +271,76 @@
                 plugins: [ChartDataLabels]
             });
 
-            renderMainTable();
+            renderMainTable(rows);
         }
 
-        function renderMainTable() {
+        function renderMainTable(overrideRows) {
+            const filterDate = document.getElementById('globalFilterDate').value;
+            let rowsToRender = overrideRows;
+            
+            if (!rowsToRender) {
+                rowsToRender = allProcessedRows.filter(row => {
+                    if (!filterDate) return true;
+                    return parseRowDate(row) === filterDate;
+                });
+            }
+
             const filter = document.getElementById('filterStatus').value;
             const tbody = document.getElementById('main-data-body');
-            const cols = [CONFIG.COL_A, CONFIG.COL_B, CONFIG.COL_C, CONFIG.COL_E, CONFIG.COL_U, CONFIG.COL_V];
             
-            const filteredRows = allProcessedRows.filter(r => {
+            const filteredRows = rowsToRender.filter(r => {
                 if (filter === "ทั้งหมด") return true;
                 const statusMap = { "FINISH": "สำรวจเสร็จสิ้น", "PROCESS": "ระหว่างดำเนินการ", "WAITING": "รอดำเนินการ" };
                 const s = statusMap[r.c[CONFIG.COL_V]?.v || "WAITING"] || "รอดำเนินการ";
                 return s === filter;
             });
 
-            tbody.innerHTML = filteredRows.map(r => `
-                <tr class="border-b hover:bg-gray-50">
-                    ${cols.map(idx => `<td class="p-3">${r.c[idx]?.v || '-'}</td>`).join('')}
-                </tr>
-            `).join('');
+            const surveyorMap = {
+                "452037": "นายพงษ์ศักดิ์ ประจันตะเสน",
+                "489783": "นายชัยยัณห์ มนตรี",
+                "497220": "นายปราบทรชน สุวรรณหงษ์",
+                "508578": "ส.อ.ภูวณัตย์ ศรีจันทร์",
+                "511910": "นายนิพจน์ สีเงิน",
+                "511945": "นายพรหมพิทักษ์ โพธิ์ตึ"
+            };
+
+            tbody.innerHTML = filteredRows.map(r => {
+                const idVal = r.c[CONFIG.COL_A]?.v || '-';
+                const trVal = r.c[CONFIG.COL_B]?.v || '-';
+                const officeVal = r.c[CONFIG.COL_C]?.v || '-';
+                const polesVal = r.c[CONFIG.COL_E]?.v || '-';
+                
+                let rawSurveyor = r.c[CONFIG.COL_U]?.v;
+                const surveyorVal = (rawSurveyor !== null && rawSurveyor !== undefined) ? (surveyorMap[String(rawSurveyor).trim()] || rawSurveyor) : '-';
+                
+                let dateVal = r.c[CONFIG.COL_T]?.f || r.c[CONFIG.COL_T]?.v || '-';
+                if (typeof dateVal === 'string' && dateVal.startsWith('Date(')) {
+                    const parts = dateVal.match(/\d+/g);
+                    if (parts && parts.length >= 3) {
+                        dateVal = `${parts[2]}/${parts[1] == 11 ? 12 : parseInt(parts[1])+1}/${parts[0]}`;
+                    }
+                }
+
+                const rawStatus = r.c[CONFIG.COL_V]?.v || "WAITING";
+                const statusMap = { "FINISH": "สำรวจเสร็จสิ้น", "PROCESS": "ระหว่างดำเนินการ", "WAITING": "รอดำเนินการ" };
+                const statusVal = statusMap[rawStatus] || "รอดำเนินการ";
+
+                let badgeClass = "bg-red-100 text-red-800";
+                if (statusVal === "สำรวจเสร็จสิ้น") badgeClass = "bg-green-100 text-green-800";
+                else if (statusVal === "ระหว่างดำเนินการ") badgeClass = "bg-amber-100 text-amber-800";
+
+                return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3">${idVal}</td>
+                        <td class="p-3">${trVal}</td>
+                        <td class="p-3">${officeVal}</td>
+                        <td class="p-3">${polesVal}</td>
+                        <td class="p-3">${surveyorVal}</td>
+                        <td class="p-3">${dateVal}</td>
+                        <td class="p-3"><span class="px-2 py-1 rounded-full text-xs font-semibold ${badgeClass}">${statusVal}</span></td>
+                    </tr>
+                `;
+            }).join('') || `<tr><td colspan="7" class="py-4 text-center text-gray-500">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>`;
         }
         
         window.onload = fetchData;
