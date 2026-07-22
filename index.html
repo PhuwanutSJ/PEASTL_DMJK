@@ -156,7 +156,7 @@
         let allProcessedRows = [];
 
         async function fetchData() {
-            const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json`;
+            const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&gid=652175259`;
             try {
                 const res = await fetch(url);
                 const text = await res.text();
