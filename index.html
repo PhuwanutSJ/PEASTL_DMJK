@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard กฟส.มัญจาคีรี</title>
+    <title>Dashboard สำรวจโคมไฟสาธารณะ (ทุกสาขา)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,17 +18,38 @@
         <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-blue-900">Dashboard สำรวจโคมไฟสาธารณะ</h1>
-                <p class="text-gray-600">กฟส.มัญจาคีรี | อัปเดตล่าสุด: <span id="last-update">กำลังดึงข้อมูล...</span></p>
+                <p class="text-gray-600">ระบบติดตามการสำรวจโคมไฟสาธารณะ | อัปเดตล่าสุด: <span id="last-update">กำลังดึงข้อมูล...</span></p>
             </div>
-            <!-- Global Date Filter -->
-            <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-                <span class="text-sm font-semibold text-gray-700 pl-2">กรองวันที่:</span>
-                <input type="date" id="globalFilterDate" onchange="applyGlobalFilter()" class="border rounded-lg p-1.5 bg-gray-50 text-sm">
-                <button onclick="document.getElementById('globalFilterDate').value=''; applyGlobalFilter();" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded-lg">ล้างวันที่</button>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Office Filter -->
+                <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+                    <span class="text-sm font-semibold text-gray-700 pl-2">สาขา:</span>
+                    <select id="globalFilterOffice" onchange="applyGlobalFilter()" class="border rounded-lg p-1.5 bg-gray-50 text-sm">
+                        <option value="ทั้งหมด">ทุกสาขา</option>
+                        <option value="0412101">0412101 - กฟส.บ้านไผ่</option>
+                        <option value="0412102">0412102 - กฟส.ชนบท</option>
+                        <option value="0412103">0412103 - กฟส.เปือยน้อย</option>
+                        <option value="0412104">0412104 - กฟส.บ้านแฮด</option>
+                        <option value="0412105">0412105 - กฟส.โนนศิลา</option>
+                        <option value="0412201">0412201 - กฟส.พล</option>
+                        <option value="0412203">0412203 - กฟส.แวงน้อย</option>
+                        <option value="0412204">0412204 - กฟส.แวงใหญ่</option>
+                        <option value="0412401">0412401 - กฟส.มัญจาคีรี</option>
+                        <option value="0412403">0412403 - กฟส.โคกโพธิ์ไชย</option>
+                        <option value="0412501">0412501 - กฟส.หนองสองห้อง</option>
+                    </select>
+                </div>
+
+                <!-- Global Date Filter -->
+                <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+                    <span class="text-sm font-semibold text-gray-700 pl-2">วันที่:</span>
+                    <input type="date" id="globalFilterDate" onchange="applyGlobalFilter()" class="border rounded-lg p-1.5 bg-gray-50 text-sm">
+                    <button onclick="document.getElementById('globalFilterDate').value=''; applyGlobalFilter();" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded-lg">ล้างวันที่</button>
+                </div>
             </div>
         </header>
 
-        <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                 <div>
@@ -62,7 +83,6 @@
             </div>
         </div>
 
-        <!-- Charts and Surveyor Section -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h2 class="text-xl font-semibold mb-4">ผลการสำรวจรายบุคคล (เฉพาะที่เสร็จสิ้น)</h2>
@@ -81,7 +101,6 @@
             </div>
         </div>
 
-        <!-- Filtered Data Table -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
                 <h2 class="text-xl font-semibold">ข้อมูลการสำรวจทั้งหมด</h2>
@@ -119,6 +138,21 @@
             COL_A: 0, COL_B: 1, COL_C: 2, COL_E: 4, COL_U: 20, COL_V: 21, COL_T: 19
         };
         
+        // Office mapping dictionary
+        const OFFICE_MAP = {
+            "0412101": "กฟส.บ้านไผ่",
+            "0412102": "กฟส.ชนบท",
+            "0412103": "กฟส.เปือยน้อย",
+            "0412104": "กฟส.บ้านแฮด",
+            "0412105": "กฟส.โนนศิลา",
+            "0412201": "กฟส.พล",
+            "0412203": "กฟส.แวงน้อย",
+            "0412204": "กฟส.แวงใหญ่",
+            "0412401": "กฟส.มัญจาคีรี",
+            "0412403": "กฟส.โคกโพธิ์ไชย",
+            "0412501": "กฟส.หนองสองห้อง"
+        };
+
         let allProcessedRows = [];
 
         async function fetchData() {
@@ -141,19 +175,16 @@
             const dateVal = cell.f || cell.v;
             if (!dateVal) return null;
 
-            // Handle Google Visualization Date string format: "Date(YYYY, M, D)"
             if (typeof dateVal === 'string' && dateVal.startsWith('Date(')) {
                 const parts = dateVal.match(/\d+/g);
                 if (parts && parts.length >= 3) {
                     let y = parseInt(parts[0]);
-                    // Convert Buddhist Era (พ.ศ. >= 2400) to Gregorian (ค.ศ.)
                     if (y > 2400) y -= 543;
                     const m = String(parseInt(parts[1]) + 1).padStart(2, '0');
                     const d = String(parts[2]).padStart(2, '0');
                     return `${y}-${m}-${d}`;
                 }
             } else if (typeof dateVal === 'string') {
-                // If format is like "DD/MM/YYYY" or "DD/MM/BBBB"
                 const parts = dateVal.split('/');
                 if (parts.length === 3) {
                     let d = parts[0].padStart(2, '0');
@@ -163,7 +194,6 @@
                     return `${y}-${m}-${d}`;
                 }
                 
-                // If standard YYYY-MM-DD
                 if (/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
                     let [y, m, d] = dateVal.split('-');
                     if (parseInt(y) > 2400) y = String(parseInt(y) - 543);
@@ -184,11 +214,25 @@
 
         function applyGlobalFilter() {
             const filterDate = document.getElementById('globalFilterDate').value;
+            const filterOffice = document.getElementById('globalFilterOffice').value;
             
             const filteredRows = allProcessedRows.filter(row => {
-                if (!filterDate) return true;
-                const rowDate = parseRowDate(row);
-                return rowDate === filterDate;
+                const c = row.c;
+                if (!c) return false;
+
+                // Office Filter check (Col C)
+                if (filterOffice !== "ทั้งหมด") {
+                    const rawOffice = String(c[CONFIG.COL_C]?.v || '').trim();
+                    if (rawOffice !== filterOffice) return false;
+                }
+
+                // Date Filter check
+                if (filterDate) {
+                    const rowDate = parseRowDate(row);
+                    if (rowDate !== filterDate) return false;
+                }
+
+                return true;
             });
 
             processData(filteredRows);
@@ -199,7 +243,6 @@
             let done = 0, progress = 0, pending = 0;
             const surveyors = {};
             
-            // Map surveyor ID/name to full name
             const surveyorMap = {
                 "452037": "นายพงษ์ศักดิ์ ประจันตะเสน",
                 "489783": "นายชัยยัณห์ มนตรี",
@@ -242,7 +285,7 @@
             const tbody = document.getElementById('surveyor-table-body');
             tbody.innerHTML = Object.entries(surveyors).map(([name, d]) => `
                 <tr class="border-b"><td class="py-3">${name}</td><td class="py-3 text-center">${d.devices}</td><td class="py-3 text-center">${d.poles}</td></tr>
-            `).join('') || `<tr><td colspan="3" class="py-4 text-center text-gray-500">ไม่มีข้อมูลผู้สำรวจตามวันที่เลือก</td></tr>`;
+            `).join('') || `<tr><td colspan="3" class="py-4 text-center text-gray-500">ไม่มีข้อมูลผู้สำรวจตามเงื่อนไขที่เลือก</td></tr>`;
 
             const ctx = document.getElementById('statusChart').getContext('2d');
             if (window.myChart) window.myChart.destroy();
@@ -276,12 +319,16 @@
 
         function renderMainTable(overrideRows) {
             const filterDate = document.getElementById('globalFilterDate').value;
+            const filterOffice = document.getElementById('globalFilterOffice').value;
             let rowsToRender = overrideRows;
             
             if (!rowsToRender) {
                 rowsToRender = allProcessedRows.filter(row => {
-                    if (!filterDate) return true;
-                    return parseRowDate(row) === filterDate;
+                    const c = row.c;
+                    if (!c) return false;
+                    if (filterOffice !== "ทั้งหมด" && String(c[CONFIG.COL_C]?.v || '').trim() !== filterOffice) return false;
+                    if (filterDate && parseRowDate(row) !== filterDate) return false;
+                    return true;
                 });
             }
 
@@ -307,7 +354,10 @@
             tbody.innerHTML = filteredRows.map(r => {
                 const idVal = r.c[CONFIG.COL_A]?.v || '-';
                 const trVal = r.c[CONFIG.COL_B]?.v || '-';
-                const officeVal = r.c[CONFIG.COL_C]?.v || '-';
+                
+                const rawOffice = String(r.c[CONFIG.COL_C]?.v || '').trim();
+                const officeVal = OFFICE_MAP[rawOffice] ? `${rawOffice} - ${OFFICE_MAP[rawOffice]}` : (rawOffice || '-');
+                
                 const polesVal = r.c[CONFIG.COL_E]?.v || '-';
                 
                 let rawSurveyor = r.c[CONFIG.COL_U]?.v;
