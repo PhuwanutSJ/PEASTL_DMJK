@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard สำรวจโคมไฟสาธารณะ (ทุกสาขา)</title>
+    <title>Dashboard กฟส.มัญจาคีรี</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,7 +18,7 @@
         <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-blue-900">Dashboard สำรวจโคมไฟสาธารณะ</h1>
-                <p class="text-gray-600">ระบบติดตามการสำรวจโคมไฟสาธารณะ | อัปเดตล่าสุด: <span id="last-update">กำลังดึงข้อมูล...</span></p>
+                <p class="text-gray-600">กฟส.มัญจาคีรี | อัปเดตล่าสุด: <span id="last-update">กำลังดึงข้อมูล...</span></p>
             </div>
             
             <div class="flex flex-wrap items-center gap-3">
@@ -26,24 +26,24 @@
                 <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
                     <span class="text-sm font-semibold text-gray-700 pl-2">สาขา:</span>
                     <select id="globalFilterOffice" onchange="applyGlobalFilter()" class="border rounded-lg p-1.5 bg-gray-50 text-sm">
-                        <option value="ทั้งหมด">ทุกสาขา</option>
-                        <option value="0412101">0412101 - กฟส.บ้านไผ่</option>
-                        <option value="0412102">0412102 - กฟส.ชนบท</option>
-                        <option value="0412103">0412103 - กฟส.เปือยน้อย</option>
-                        <option value="0412104">0412104 - กฟส.บ้านแฮด</option>
-                        <option value="0412105">0412105 - กฟส.โนนศิลา</option>
-                        <option value="0412201">0412201 - กฟส.พล</option>
-                        <option value="0412203">0412203 - กฟส.แวงน้อย</option>
-                        <option value="0412204">0412204 - กฟส.แวงใหญ่</option>
-                        <option value="0412401">0412401 - กฟส.มัญจาคีรี</option>
-                        <option value="0412403">0412403 - กฟส.โคกโพธิ์ไชย</option>
-                        <option value="0412501">0412501 - กฟส.หนองสองห้อง</option>
+                        <option value="ทั้งหมด">ทั้งหมด</option>
+                        <option value="กฟส.บ้านไผ่">กฟส.บ้านไผ่</option>
+                        <option value="กฟส.ชนบท">กฟส.ชนบท</option>
+                        <option value="กฟส.เปือยน้อย">กฟส.เปือยน้อย</option>
+                        <option value="กฟส.บ้านแฮด">กฟส.บ้านแฮด</option>
+                        <option value="กฟส.โนนศิลา">กฟส.โนนศิลา</option>
+                        <option value="กฟส.พล">กฟส.พล</option>
+                        <option value="กฟส.แวงน้อย">กฟส.แวงน้อย</option>
+                        <option value="กฟส.แวงใหญ่">กฟส.แวงใหญ่</option>
+                        <option value="กฟส.มัญจาคีรี">กฟส.มัญจาคีรี</option>
+                        <option value="กฟส.โคกโพธิ์ไชย">กฟส.โคกโพธิ์ไชย</option>
+                        <option value="กฟส.หนองสองห้อง">กฟส.หนองสองห้อง</option>
                     </select>
                 </div>
 
                 <!-- Global Date Filter -->
                 <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-                    <span class="text-sm font-semibold text-gray-700 pl-2">วันที่:</span>
+                    <span class="text-sm font-semibold text-gray-700 pl-2">กรองวันที่:</span>
                     <input type="date" id="globalFilterDate" onchange="applyGlobalFilter()" class="border rounded-lg p-1.5 bg-gray-50 text-sm">
                     <button onclick="document.getElementById('globalFilterDate').value=''; applyGlobalFilter();" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded-lg">ล้างวันที่</button>
                 </div>
@@ -113,6 +113,8 @@
                     </select>
                 </div>
             </div>
+            <!-- Debug Info Area -->
+            <div id="debug-info" class="text-xs text-gray-500 mb-2 bg-gray-50 p-2 rounded border"></div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left border-collapse">
                     <thead class="bg-gray-100 border-b">
@@ -138,8 +140,20 @@
             COL_A: 0, COL_B: 1, COL_C: 2, COL_E: 4, COL_U: 20, COL_V: 21, COL_T: 19
         };
         
-        // Office mapping dictionary
-        const OFFICE_MAP = {
+        // Map Office Codes to Office Names according to user specs
+        const OFFICE_MAPPING = {
+            "412101": "กฟส.บ้านไผ่",
+            "412102": "กฟส.ชนบท",
+            "412103": "กฟส.เปือยน้อย",
+            "412104": "กฟส.บ้านแฮด",
+            "412105": "กฟส.โนนศิลา",
+            "412201": "กฟส.พล",
+            "412203": "กฟส.แวงน้อย",
+            "412204": "กฟส.แวงใหญ่",
+            "412401": "กฟส.มัญจาคีรี",
+            "412403": "กฟส.โคกโพธิ์ไชย",
+            "412501": "กฟส.หนองสองห้อง",
+            // Keep 7-digit fallbacks just in case sheet contains leading zeros
             "0412101": "กฟส.บ้านไผ่",
             "0412102": "กฟส.ชนบท",
             "0412103": "กฟส.เปือยน้อย",
@@ -152,7 +166,7 @@
             "0412403": "กฟส.โคกโพธิ์ไชย",
             "0412501": "กฟส.หนองสองห้อง"
         };
-
+        
         let allProcessedRows = [];
 
         async function fetchData() {
@@ -162,8 +176,22 @@
                 const text = await res.text();
                 const json = JSON.parse(text.substring(47).slice(0, -2));
                 allProcessedRows = json.table.rows;
+                
+                // Debug available office values in the dataset
+                let officeSet = new Set();
+                allProcessedRows.forEach(r => {
+                    if (r.c && r.c[CONFIG.COL_C]) {
+                        let val = r.c[CONFIG.COL_C].f || r.c[CONFIG.COL_C].v;
+                        if (val !== undefined && val !== null) officeSet.add(String(val).trim());
+                    }
+                });
+                document.getElementById('debug-info').innerText = `ข้อมูลทั้งหมด: ${allProcessedRows.length} แถว | ค่า Office ที่พบในชีต: ${Array.from(officeSet).join(', ')}`;
+
                 applyGlobalFilter();
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e); 
+                document.getElementById('debug-info').innerText = 'เกิดข้อผิดพลาดในการดึงข้อมูล: ' + e.message;
+            }
         }
 
         function parseRowDate(row) {
@@ -214,22 +242,26 @@
 
         function applyGlobalFilter() {
             const filterDate = document.getElementById('globalFilterDate').value;
-            const filterOffice = document.getElementById('globalFilterOffice').value;
+            const filterOfficeName = document.getElementById('globalFilterOffice').value;
             
             const filteredRows = allProcessedRows.filter(row => {
                 const c = row.c;
                 if (!c) return false;
 
-                // Office Filter check (Col C)
-                if (filterOffice !== "ทั้งหมด") {
-                    const rawOffice = String(c[CONFIG.COL_C]?.v || '').trim();
-                    if (rawOffice !== filterOffice) return false;
-                }
-
-                // Date Filter check
                 if (filterDate) {
                     const rowDate = parseRowDate(row);
                     if (rowDate !== filterDate) return false;
+                }
+
+                if (filterOfficeName !== "ทั้งหมด") {
+                    const cellC = c[CONFIG.COL_C];
+                    if (!cellC) return false;
+                    const rawOfficeCode = String(cellC.f !== undefined && cellC.f !== null ? cellC.f : (cellC.v !== undefined && cellC.v !== null ? cellC.v : "")).trim();
+                    
+                    // Map raw office code to name or keep raw if not found
+                    const mappedName = OFFICE_MAPPING[rawOfficeCode] || rawOfficeCode;
+                    
+                    if (mappedName !== filterOfficeName && !rawOfficeCode.includes(filterOfficeName)) return false;
                 }
 
                 return true;
@@ -318,16 +350,29 @@
         }
 
         function renderMainTable(overrideRows) {
-            const filterDate = document.getElementById('globalFilterDate').value;
-            const filterOffice = document.getElementById('globalFilterOffice').value;
             let rowsToRender = overrideRows;
             
             if (!rowsToRender) {
+                const filterDate = document.getElementById('globalFilterDate').value;
+                const filterOfficeName = document.getElementById('globalFilterOffice').value;
+
                 rowsToRender = allProcessedRows.filter(row => {
                     const c = row.c;
                     if (!c) return false;
-                    if (filterOffice !== "ทั้งหมด" && String(c[CONFIG.COL_C]?.v || '').trim() !== filterOffice) return false;
-                    if (filterDate && parseRowDate(row) !== filterDate) return false;
+
+                    if (filterDate) {
+                        const rowDate = parseRowDate(row);
+                        if (rowDate !== filterDate) return false;
+                    }
+
+                    if (filterOfficeName !== "ทั้งหมด") {
+                        const cellC = c[CONFIG.COL_C];
+                        if (!cellC) return false;
+                        const rawOfficeCode = String(cellC.f !== undefined && cellC.f !== null ? cellC.f : (cellC.v !== undefined && cellC.v !== null ? cellC.v : "")).trim();
+                        const mappedName = OFFICE_MAPPING[rawOfficeCode] || rawOfficeCode;
+                        if (mappedName !== filterOfficeName && !rawOfficeCode.includes(filterOfficeName)) return false;
+                    }
+
                     return true;
                 });
             }
@@ -355,9 +400,9 @@
                 const idVal = r.c[CONFIG.COL_A]?.v || '-';
                 const trVal = r.c[CONFIG.COL_B]?.v || '-';
                 
-                const rawOffice = String(r.c[CONFIG.COL_C]?.v || '').trim();
-                const officeVal = OFFICE_MAP[rawOffice] ? `${rawOffice} - ${OFFICE_MAP[rawOffice]}` : (rawOffice || '-');
-                
+                let rawOfficeCode = r.c[CONFIG.COL_C]?.f || r.c[CONFIG.COL_C]?.v || '-';
+                const officeVal = OFFICE_MAPPING[String(rawOfficeCode).trim()] || rawOfficeCode;
+
                 const polesVal = r.c[CONFIG.COL_E]?.v || '-';
                 
                 let rawSurveyor = r.c[CONFIG.COL_U]?.v;
